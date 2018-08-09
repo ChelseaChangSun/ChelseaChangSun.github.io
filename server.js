@@ -1,120 +1,151 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Set listener for changes in device orientation...');
-    window.addEventListener('deviceorientation', (e) => {
-        var alpha = e.alpha
-        var beta = e.beta
-        var gamma = e.gamma
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+        typeof define === 'function' && define.amd ? define(factory) :
+            (global.Orienter = factory());
+}(this, (function () {
+    'use strict';
 
-        this.opts = {
-            onChange: function () {}
-        }
-        if (typeof options === 'function') {
-            this.opts.onChange = options
-        } else {
-            this.opts = assign(this.opts, options)
-        }
+    var Orienter = function () {
+        this.initialize.apply(this, arguments);
+    };
 
-        this.data = {
-            initLeftRotate: undefined,
-            initForwardSlant: this.opts.initForwardSlant,
-            lon: undefined,
-            lat: undefined,
-            orientation: window.orientation || 0
-        }
+    Orienter.prototype = {
+        lon: 0,
+        lat: 0,
+        direction: 0,
+        fix: 0,
+        os: '',
+        initialize: function (config) {
+            var _config = config || {};
 
-        this.data.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+            this.onOrient = _config.onOrient || null;
+            this.onChange = _config.onChange || null;
 
-        if (this.data.initLeftRotate === undefined) {
-                this.data.initLeftRotate = this.data.isIOS ? e.webkitCompassHeading : alpha
-            }
-            // iOS 的 alpha 的已经是相对的了，不做处理
-            if (!this.data.isIOS) {
-                if (alpha > 0 || alpha < this.data.initLeftRotate) {
-                    alpha += 360
-                }
-                alpha -= this.data.initLeftRotate
-            }
+            this._orient = this._orient.bind(this);
+            this._change = this._change.bind(this);
 
-            this.data.leftRotate = alpha < 180 ? alpha : alpha - 360
-            this.data.rightRotate = -this.data.leftRotate
+            this.lon = 0;
+            this.lat = 0;
+            this.direction = window.orientation || 0;
 
-            switch (this.data.orientation) {
+            switch (this.direction) {
                 case 0:
-                    this.data.forwardSlant = beta
-                    break
+                    this.fix = 0;
+                    break;
                 case 90:
-                    this.data.forwardSlant = gamma < 0 ? -gamma : 180 - gamma
-                    break
+                    this.fix = -270;
+                    break;
                 case -90:
-                    this.data.forwardSlant = gamma < 0 ? 180 + gamma : gamma
-                    break
+                    this.fix = -90;
+                    break;
             }
-            this.data.backwardSlant = -this.data.forwardSlant
-            this.data.isForward = this.data.forwardSlant > 0
-            this.data.isBackward = !this.data.isForward
 
-            if (this.data.initForwardSlant === undefined) {
-                this.data.initForwardSlant = this.data.forwardSlant  // 记录初始的 向前倾斜度
+            if (!!navigator.userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)) {
+                this.os = 'ios';
+            } else {
+                this.os = (navigator.userAgent.indexOf('Android') > -1 || navigator.userAgent.indexOf('Linux')) ? 'android' : '';
             }
-            switch (this.data.orientation) {
-                case 0:
-                    this.data.forwardThreshold = this.data.initForwardSlant > 0 ? -180 + this.data.initForwardSlant : 180 + this.data.initForwardSlant
-                    if (this.data.initForwardSlant > 0 && beta < this.data.forwardThreshold) {
-                        this.data.relativeForwardSlant = beta + 360 - this.data.initForwardSlant
-                    } else if (this.data.initForwardSlant < 0 && beta > this.data.forwardThreshold) {
-                        this.data.relativeForwardSlant = beta - 180 - this.data.initForwardSlant
-                    } else {
-                        this.data.relativeForwardSlant = beta - this.data.initForwardSlant
+        },
+
+        init: function () {
+            window.addEventListener('deviceorientation', this._orient, false);
+            window.addEventListener('orientationchange', this._change, false);
+        },
+
+        destroy: function () {
+            window.removeEventListener('deviceorientation', this._orient, false);
+            window.removeEventListener('orientationchange', this._change, false);
+        },
+
+        _change: function (event) {
+            this.direction = window.orientation;
+
+            if (this.onChange) this.onChange(this.direction);
+        },
+
+        changeDirectionTo: function (n) {
+            this.direction = n;
+        },
+
+        _orient: function (event) {
+            switch (this.os) {
+                case 'ios':
+                    switch (this.direction) {
+                        case 0:
+                            this.lon = event.alpha + event.gamma;
+                            if (event.beta > 0) this.lat = event.beta - 90;
+                            break;
+                        case 90:
+                            if (event.gamma < 0) {
+                                this.lon = event.alpha - 90;
+                            } else {
+                                this.lon = event.alpha - 270;
+                            }
+                            if (event.gamma > 0) {
+                                this.lat = 90 - event.gamma;
+                            } else {
+                                this.lat = -90 - event.gamma;
+                            }
+                            break;
+                        case -90:
+                            if (event.gamma < 0) {
+                                this.lon = event.alpha - 90;
+                            } else {
+                                this.lon = event.alpha - 270;
+                            }
+                            if (event.gamma < 0) {
+                                this.lat = 90 + event.gamma;
+                            } else {
+                                this.lat = -90 + event.gamma;
+                            }
+                            break;
                     }
-                    break
-                case 90:
-                case -90:
-                    // this.data.forwardThreshold
-                    // 横屏时，只考虑向前倾斜度在 [0, 180] 的情况
-                    this.data.relativeForwardSlant = this.data.forwardSlant - this.data.initForwardSlant
-                    break
+                    break;
+                case 'android':
+                    switch (this.direction) {
+                        case 0:
+                            this.lon = event.alpha + event.gamma + 30;
+                            if (event.gamma > 90) {
+                                this.lat = 90 - event.beta;
+                            } else {
+                                this.lat = event.beta - 90;
+                            }
+                            break;
+                        case 90:
+                            this.lon = event.alpha - 230;
+                            if (event.gamma > 0) {
+                                this.lat = 270 - event.gamma;
+                            } else {
+                                this.lat = -90 - event.gamma;
+                            }
+                            break;
+                        case -90:
+                            this.lon = event.alpha - 180;
+                            this.lat = -90 + event.gamma;
+                            break;
+                    }
+                    break;
             }
-            this.data.relativeBackwardSlant = -this.data.relativeForwardSlant
-            this.data.isRelativeForward = this.data.relativeForwardSlant > 0
-            this.data.isRelativeBackward = !this.data.isRelativeForward
 
-            // 计算 左右倾斜度
-            switch (this.data.orientation) {
-                case 0:
-                    this.data.leftSlant = -gamma
-                    break
-                case 90:
-                    this.data.leftSlant = -beta
-                    break
-                case -90:
-                    this.data.leftSlant = beta
-                    break
-            }
-            this.data.rightSlant = -this.data.leftSlant
-            this.data.isLeft = this.data.leftSlant > 0
-            this.data.isRight = !this.data.isLeft
+            this.lon += this.fix;
+            this.lon %= 360;
+            if (this.lon < 0) this.lon += 360;
 
-            // 计算 经纬度
-            var lon = this.data.leftRotate + this.data.rightSlant
-            lon = lon < 0 ? lon + 360 : lon
-            var lat = this.data.forwardSlant - 90
+            this.lon = Math.round(this.lon);
+            this.lat = Math.round(this.lat);
 
-            this.data.offsetLon = this.data.lon === undefined ? 0 : lon - this.data.lon
-            this.data.offsetLat = this.data.lat === undefined ? 0 : lat - this.data.lat
-            this.data.lon = lon
-            this.data.lat = lat
+            if (this.onOrient) this.onOrient({
+                a: Math.round(event.alpha),
+                b: Math.round(event.beta),
+                g: Math.round(event.gamma),
+                lon: this.lon,
+                lat: this.lat,
+                dir: this.direction
+            });
+        }
 
-            this.opts.onChange(assign(e, this.data))
+    };
 
+    return Orienter;
 
-        console.log('New Orientation:');
-        //console.log('    Absolute: ' + e.absolute);
-        console.log('    Alpha   : ' + e.alpha);
-        console.log('    Beta    : ' + e.beta);
-        console.log('    Gamma   : ' + e.gamma);
-        //document.getElementById('absolute').innerText = "" + event.absolute;
-        document.getElementById('alpha').innerText = "" + e.alpha;
-        document.getElementById('beta').innerText = "" + e.beta;
-        document.getElementById('gamma').innerText = "" + e.gamma;
-    }, false);
-});
+})));
