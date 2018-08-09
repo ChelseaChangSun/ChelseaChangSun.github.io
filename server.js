@@ -1,38 +1,10 @@
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD
-        define([], factory)
-    } else if (typeof module === 'object' && module.exports) {
-        // CMD
-        module.exports = factory()
-    } else {
-        // Browser globals (root is window)
-        root.Orientation = factory()
-    }
-}(this, function () {
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-    var assign = Object.assign || function (target) {
-        'use strict'
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Set listener for changes in device orientation...');
+    window.addEventListener('deviceorientation', (e) => {
+        var alpha = e.alpha
+        var beta = e.beta
+        var gamma = e.gamma
 
-        if (target === undefined || target === null) {
-            throw new TypeError('Cannot convert undefined or null to object')
-        }
-
-        var output = Object(target)
-        for (var index = 1; index < arguments.length; index++) {
-            var source = arguments[index]
-            if (source !== undefined && source !== null) {
-                for (var nextKey in source) {
-                    if (Object.prototype.hasOwnProperty.call(source, nextKey)) {
-                        output[nextKey] = source[nextKey]
-                    }
-                }
-            }
-        }
-        return output
-    }
-
-    var Orientation = function (options) {
         this.opts = {
             onChange: function () {}
         }
@@ -50,18 +22,9 @@
             orientation: window.orientation || 0
         }
 
-        // iOS detection from: http://stackoverflow.com/a/9039885/177710
         this.data.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
-        this.handleDeviceOrientation = function (e) {
-            if (!this._isListening) return
-
-            var alpha = e.alpha
-            var beta = e.beta
-            var gamma = e.gamma
-
-            // https://github.com/w3c/deviceorientation/issues/6
-            if (this.data.initLeftRotate === undefined) {
+        if (this.data.initLeftRotate === undefined) {
                 this.data.initLeftRotate = this.data.isIOS ? e.webkitCompassHeading : alpha
             }
             // iOS 的 alpha 的已经是相对的了，不做处理
@@ -142,44 +105,16 @@
             this.data.lat = lat
 
             this.opts.onChange(assign(e, this.data))
-        }
 
-        this.handleOrientationChange = function (e) {
-            this.data.orientation = window.orientation
-            this.data.initForwardSlant = this.opts.initForwardSlant
-        }
-    }
 
-    Orientation.prototype.init = function () {
-        // 防止重复监听
-        if (this._isListening) {
-            window.removeEventListener('deviceorientation', this._handleDeviceOrientation, false)
-            window.removeEventListener('orientationchange', this._handleOrientationChange, false)
-        }
-        this._isListening = true
-        this.data.initLeftRotate = undefined
-        this.data.initForwardSlant = this.opts.initForwardSlant
-        this.data.lon = undefined
-        this.data.lat = undefined
-        this._handleDeviceOrientation = this.handleDeviceOrientation.bind(this)
-        this._handleOrientationChange = this.handleOrientationChange.bind(this)
-        window.addEventListener('deviceorientation', this._handleDeviceOrientation, false)
-        window.addEventListener('orientationchange', this._handleOrientationChange, false)
-    }
-
-    Orientation.prototype.pause = function () {
-        this._isListening = false
-    }
-
-    Orientation.prototype.continue = function () {
-        this._isListening = true
-    }
-
-    Orientation.prototype.destory = function () {
-        this._isListening = false
-        window.removeEventListener('deviceorientation', this._handleDeviceOrientation, false)
-        window.removeEventListener('orientationchange', this._handleOrientationChange, false)
-    }
-
-    return Orientation
-}))
+        console.log('New Orientation:');
+        //console.log('    Absolute: ' + e.absolute);
+        console.log('    Alpha   : ' + e.alpha);
+        console.log('    Beta    : ' + e.beta);
+        console.log('    Gamma   : ' + e.gamma);
+        //document.getElementById('absolute').innerText = "" + event.absolute;
+        document.getElementById('alpha').innerText = "" + e.alpha;
+        document.getElementById('beta').innerText = "" + e.beta;
+        document.getElementById('gamma').innerText = "" + e.gamma;
+    }, false);
+});
