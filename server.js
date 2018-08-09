@@ -68,78 +68,11 @@
         },
 
         _orient: function (event) {
-            switch (this.os) {
-                case 'ios':
-                    switch (this.direction) {
-                        case 0:
-                            this.lon = event.alpha + event.gamma;
-                            if (event.beta > 0) this.lat = event.beta - 90;
-                            break;
-                        case 90:
-                            if (event.gamma < 0) {
-                                this.lon = event.alpha - 90;
-                            } else {
-                                this.lon = event.alpha - 270;
-                            }
-                            if (event.gamma > 0) {
-                                this.lat = 90 - event.gamma;
-                            } else {
-                                this.lat = -90 - event.gamma;
-                            }
-                            break;
-                        case -90:
-                            if (event.gamma < 0) {
-                                this.lon = event.alpha - 90;
-                            } else {
-                                this.lon = event.alpha - 270;
-                            }
-                            if (event.gamma < 0) {
-                                this.lat = 90 + event.gamma;
-                            } else {
-                                this.lat = -90 + event.gamma;
-                            }
-                            break;
-                    }
-                    break;
-                case 'android':
-                    switch (this.direction) {
-                        case 0:
-                            this.lon = event.alpha + event.gamma + 30;
-                            if (event.gamma > 90) {
-                                this.lat = 90 - event.beta;
-                            } else {
-                                this.lat = event.beta - 90;
-                            }
-                            break;
-                        case 90:
-                            this.lon = event.alpha - 230;
-                            if (event.gamma > 0) {
-                                this.lat = 270 - event.gamma;
-                            } else {
-                                this.lat = -90 - event.gamma;
-                            }
-                            break;
-                        case -90:
-                            this.lon = event.alpha - 180;
-                            this.lat = -90 + event.gamma;
-                            break;
-                    }
-                    break;
-            }
-
-            this.lon += this.fix;
-            this.lon %= 360;
-            if (this.lon < 0) this.lon += 360;
-
-            this.lon = Math.round(this.lon);
-            this.lat = Math.round(this.lat);
-
+           
             if (this.onOrient) this.onOrient({
                 a: Math.round(event.alpha),
                 b: Math.round(event.beta),
                 g: Math.round(event.gamma),
-                lon: this.lon,
-                lat: this.lat,
                 dir: this.direction
             });
         }
