@@ -74,7 +74,8 @@
                 a: Math.round(event.alpha),
                 b: Math.round(event.beta),
                 g: Math.round(event.gamma),
-                dir: this.direction
+                dir: this.direction,
+                abs: event.absolute
             });
         }
 
