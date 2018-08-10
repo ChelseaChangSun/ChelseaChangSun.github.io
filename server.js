@@ -49,7 +49,7 @@
         },
 
         init: function () {
-            window.addEventListener('deviceorientation', this._orient, false);
+            window.addEventListener('devicemotion', this._orient, false);
             window.addEventListener('orientationchange', this._change, false);
         },
 
@@ -71,11 +71,11 @@
         _orient: function (event) {
             
             if (this.onOrient) this.onOrient({
-                a: Math.round(event.alpha),
-                b: Math.round(event.beta),
-                g: Math.round(event.gamma),
+                a: Math.round(event.rotationRate.alpha),
+                b: Math.round(event.rotationRate.beta),
+                g: Math.round(event.rotationRate.gamma),
                 dir: this.direction,
-                abs: event.absolute
+                abs: null
             });
         }
 
