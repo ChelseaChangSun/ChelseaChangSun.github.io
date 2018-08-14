@@ -71,9 +71,9 @@
         _orient: function (event) {
             
             if (this.onOrient) this.onOrient({
-                a: Math.round(event.rotationRate.alpha),
-                b: Math.round(event.rotationRate.beta),
-                g: Math.round(event.rotationRate.gamma),
+                a: Math.round(event.alpha),
+                b: Math.round(event.beta),
+                g: Math.round(event.gamma),
                 dir: this.direction,
                 abs: null
             });
