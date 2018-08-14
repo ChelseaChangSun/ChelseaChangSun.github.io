@@ -49,7 +49,7 @@
         },
 
         init: function () {
-            window.addEventListener('devicemotion', this._orient, false);
+            window.addEventListener('deviceorientation', this._orient, false);
             window.addEventListener('orientationchange', this._change, false);
         },
 
