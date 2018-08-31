@@ -88,14 +88,58 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Set listener for changes in device orientation...');
     window.addEventListener('deviceorientationabsolute', (event) => {
-        console.log('New Orientation:');
-        console.log('    Absolute: ' + event.absolute);
-        console.log('    Alpha   : ' + event.alpha);
-        console.log('    Beta    : ' + event.beta);
-        console.log('    Gamma   : ' + event.gamma);
-        document.getElementById('absolute').innerText = "" + event.absolute;
-        document.getElementById('alpha').innerText = "" + Math.round(event.alpha);
-        document.getElementById('beta').innerText = "" + Math.round(event.beta);
-        document.getElementById('gamma').innerText = "" + Math.round(event.gamma);
+//         console.log('New Orientation:');
+//         console.log('    Absolute: ' + event.absolute);
+//         console.log('    Alpha   : ' + event.alpha);
+//         console.log('    Beta    : ' + event.beta);
+//         console.log('    Gamma   : ' + event.gamma);
+//         document.getElementById('absolute').innerText = "" + event.absolute;
+//         document.getElementById('alpha').innerText = "" + Math.round(event.alpha);
+//         document.getElementById('beta').innerText = "" + Math.round(event.beta);
+//         document.getElementById('gamma').innerText = "" + Math.round(event.gamma);
+            var alpha;
+        //     判斷是否為 iOS 裝置
+        if(event.webkitCompassHeading) {
+          alpha = event.webkitCompassHeading; // iOS 裝置必須使用 event.webkitCompassHeading
+          //compass.style.WebkitTransform = 'rotate(-' + alpha + 'deg)';
+          //show.innerHTML = alpha;
+        }
+        else {
+          alpha = event.alpha;
+          webkitAlpha = alpha;
+          if(!window.chrome) {
+            webkitAlpha = alpha-270;
+          }
+        }
+        document.getElementById('alpha').innerText = "" + Math.round(alpha);
+        document.getElementById('beta').innerText = "" + Math.round(webkitAlpha);       
+                
     }, true);
 });
+
+
+// if(window.DeviceOrientationEvent) {
+
+//   window.addEventListener('deviceorientation', function(event) {
+//         var alpha;
+//         //     判斷是否為 iOS 裝置
+//         if(event.webkitCompassHeading) {
+//           alpha = event.webkitCompassHeading; // iOS 裝置必須使用 event.webkitCompassHeading
+//           //compass.style.WebkitTransform = 'rotate(-' + alpha + 'deg)';
+//           //show.innerHTML = alpha;
+//         }
+//         else {
+//           alpha = event.alpha;
+//           webkitAlpha = alpha;
+//           if(!window.chrome) {
+//             webkitAlpha = alpha-270;
+//           }
+//         }
+
+//         compass.style.Transform = 'rotate(' + alpha + 'deg)';
+//         compass.style.WebkitTransform = 'rotate('+ webkitAlpha + 'deg)';
+//         compass.style.MozTransform = 'rotate(-' + alpha + 'deg)'; 
+//       }, false);
+// }else{
+//   document.querySelector('body').innerHTML = '你的瀏覽器不支援喔';
+// }
