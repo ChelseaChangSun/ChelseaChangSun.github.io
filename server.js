@@ -87,7 +87,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Set listener for changes in device orientation...');
-    window.addEventListener('deviceorientationabsolute', (event) => {
+    window.addEventListener('deviceorientation', (event) => {
         console.log('New Orientation:');
         console.log('    Absolute: ' + event.absolute);
         console.log('    Alpha   : ' + event.alpha);
